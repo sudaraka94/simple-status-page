@@ -30,7 +30,7 @@ const StatusCard = (props: { title: string, status: "operational" | "degraded" |
                                 case "operational":
                                     return <span>&#128994;</span>;
                                 case "degraded":
-                                    return <span>&#128994;</span>;
+                                    return <span>&#128993;</span>;
                                 case "outage":
                                     return <span>&#128308;</span>;
                                 case "maintainance":
