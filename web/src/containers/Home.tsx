@@ -4,7 +4,7 @@ import { getComponents } from "../api/firebaseDataWrapper";
 import AllStatusCard, { CardStatus } from "../components/AllStatusCard";
 import StatusCard from "../components/StatusCard";
 
-const useStyle = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles((theme: Theme) => ({
     mainContent: {
         marginTop: "5vh",
     },
@@ -16,7 +16,7 @@ const useStyle = makeStyles((theme: Theme) => ({
 }));
 
 const Home = () => {
-    const classes = useStyle();
+    const classes = useStyles();
     const [statusComps, setStatusComps] = useState<any[]>([]);
     const [overallStatus, setOverallStatus] = useState<CardStatus>("operational");
 
