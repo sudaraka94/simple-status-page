@@ -1,5 +1,6 @@
 import { createMuiTheme, ThemeProvider } from "@material-ui/core";
 import Router from "./components/Router"
+import AlertContainer from "./containers/AlertContainer";
 
 function App() {
   const theme = createMuiTheme({
@@ -26,6 +27,7 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
+      <AlertContainer />
       <Router />
     </ThemeProvider>
   );
