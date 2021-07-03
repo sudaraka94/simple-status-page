@@ -1,10 +1,13 @@
 import { Container, makeStyles, Theme, Typography } from "@material-ui/core";
 import DataGrid from "../components/DataGrid";
 import { useCallback, useEffect, useState } from "react";
-import { addComponent, deleteComponent, getComponents, updateComponent } from "../api/firebaseDataWrapper";
+import { addComponent, deleteComponent, fetchSiteInfo, getComponents, updateComponent, updateSiteInfo } from "../api/firebaseDataWrapper";
 import { addSnackBarAlert } from "../slices/alertSlice";
 import { removeItemFromArray, replaceItemInArray } from "../util";
 import store from "../store";
+import TabPlane from "../components/TabPlane";
+import SiteInfoEditor from "../components/SiteInfoEditor";
+import { SiteInfo } from "../typedefs";
 
 const useStyles = makeStyles((theme: Theme) => ({
     mainContent: {
@@ -25,10 +28,20 @@ const useStyles = makeStyles((theme: Theme) => ({
 const Admin = () => {
     const classes = useStyles();
     const [statusComps, setStatusComps] = useState<any[]>([]);
+    const [siteInfo, setSiteInfo] = useState<SiteInfo>({ title: "" });
+
+    const fetchData = async () => {
+        // fetch info
+        const siteInfo = await fetchSiteInfo();
+        const components = await getComponents();
+        // update status accordingly
+        setSiteInfo(siteInfo);
+        setStatusComps(components);
+    }
 
     useEffect(() => {
-        getComponents().then(components => {
-            setStatusComps(components);
+        fetchData().catch(err => {
+            store.dispatch(addSnackBarAlert('error', `Failed to fetch data with error ${err}`));
         })
     }, []);
 
@@ -80,29 +93,50 @@ const Admin = () => {
                 reject();
             })
         });
-    }, [statusComps])
+    }, [statusComps]);
+
+    const editSiteInfo = useCallback((siteInfo:SiteInfo) => {
+        updateSiteInfo(siteInfo).then(() => {
+            updateSiteInfo(siteInfo).then(() => {
+                store.dispatch(addSnackBarAlert('success', "Info Updated Successfully!"));
+            })
+        }).catch(err => {
+            store.dispatch(addSnackBarAlert('error', `Failed to update data with error ${err}`));
+        })
+    }, [])
 
     return (
         <Container className={classes.mainContent}>
             <Typography className={classes.pageHeading} variant="h3">&#9749; Admin Dashboard</Typography>
-            <Container className={classes.tableContainer}>
-                <DataGrid
-                    editable={{
-                        onRowAdd: onAddComponent,
-                        onRowDelete: onDeleteComponent,
-                        onRowUpdate: onEditComponent,
-                    }}
-                    options={{
-                        paging: false
-                    }}
-                    columns={[
-                        { title: "Id", field: "id", editable: "never" },
-                        { title: "Title", field: "title" },
-                        { title: "Status", field: "status", lookup: { "operational": "Operational", "degraded": "Degraded", "outage": "Outage", "maintainance": "Maintainance" } }
-                    ]}
-                    data={statusComps}
-                    title="Components" />
-            </Container>
+            <TabPlane tabs={[
+                {
+                    title: "Components",
+                    tabContent: (
+                        <DataGrid
+                            editable={{
+                                onRowAdd: onAddComponent,
+                                onRowDelete: onDeleteComponent,
+                                onRowUpdate: onEditComponent,
+                            }}
+                            options={{
+                                paging: false
+                            }}
+                            columns={[
+                                { title: "Id", field: "id", editable: "never" },
+                                { title: "Title", field: "title" },
+                                { title: "Status", field: "status", lookup: { "operational": "Operational", "degraded": "Degraded", "outage": "Outage", "maintainance": "Maintainance" } }
+                            ]}
+                            data={statusComps}
+                            title="Components" />
+                    )
+                },
+                {
+                    title: "Site Info",
+                    tabContent: (
+                        <SiteInfoEditor siteInfo={siteInfo} updateSiteInfo={editSiteInfo} />
+                    )
+                }
+            ]} />
         </Container>
     );
 }
