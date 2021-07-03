@@ -53,7 +53,7 @@ const Home = () => {
                 <Typography className={classes.pageHeading} variant="h3">&#127968; Simple Status Page</Typography>
                 <Container>
                     <AllStatusCard status={overallStatus} />
-                    <Typography variant="h5">Current Status</Typography>
+                    <Typography variant="h5">Component Status</Typography>
                     <Container>
                         {statusComps.map(component => (<StatusCard key={component.title} title={component.title} status={component.status} />))}
                     </Container>

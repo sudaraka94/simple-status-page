@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { PLAIN_ALERT_TIMEOUT, SNACKBAR_ALERT_TIMEOUT } from "../config";
-import store, { AppDispatch, RootState } from "../store";
+import { AppDispatch, RootState } from "../store";
 import { generateUUID } from "../util";
 
 // Typedefs

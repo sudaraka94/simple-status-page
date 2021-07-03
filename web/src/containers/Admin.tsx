@@ -1,9 +1,9 @@
 import { Container, makeStyles, Theme, Typography } from "@material-ui/core";
 import DataGrid from "../components/DataGrid";
 import { useCallback, useEffect, useState } from "react";
-import { addComponent, deleteComponent, getComponents } from "../api/firebaseDataWrapper";
+import { addComponent, deleteComponent, getComponents, updateComponent } from "../api/firebaseDataWrapper";
 import { addSnackBarAlert } from "../slices/alertSlice";
-import { removeItemFromArray } from "../util";
+import { removeItemFromArray, replaceItemInArray } from "../util";
 import store from "../store";
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -14,6 +14,11 @@ const useStyles = makeStyles((theme: Theme) => ({
         fontWeight: 800,
         marginTop: "1vh",
         marginBottom: "1vh"
+    },
+    tableContainer: {
+        marginTop: "6vh",
+        paddingRight: 0,
+        paddingLeft: 0,
     }
 }));
 
@@ -64,14 +69,28 @@ const Admin = () => {
         });
     }, [statusComps]);
 
+    const onEditComponent = useCallback((newData, oldData) => {
+        return new Promise<void>((resolve, reject) => {
+            updateComponent(newData.id, newData).then(() => {
+                setStatusComps(replaceItemInArray(statusComps, "id", newData.id, newData));
+                store.dispatch(addSnackBarAlert('success', 'Component updated successfully!'));
+                resolve();
+            }).catch(err => {
+                store.dispatch(addSnackBarAlert('error', `Failed to update component with error: ${err}`));
+                reject();
+            })
+        });
+    }, [statusComps])
+
     return (
         <Container className={classes.mainContent}>
             <Typography className={classes.pageHeading} variant="h3">&#9749; Admin Dashboard</Typography>
-            <Container>
+            <Container className={classes.tableContainer}>
                 <DataGrid
                     editable={{
                         onRowAdd: onAddComponent,
                         onRowDelete: onDeleteComponent,
+                        onRowUpdate: onEditComponent,
                     }}
                     options={{
                         paging: false

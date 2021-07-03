@@ -31,3 +31,9 @@ export const deleteComponent = async (componentId:string) => {
 
     await db.collection(componentsCollection).doc(componentId).delete();
 }
+
+export const updateComponent = async (componentId:string, component:Component) => {
+    const db = firebase.firestore();
+
+    await db.collection(componentsCollection).doc(componentId).set(component, {merge: true});
+}
