@@ -1,11 +1,9 @@
 import { Container, makeStyles, Theme, Typography } from "@material-ui/core";
-import MaterialTable from "material-table";
-import { AddBox, ArrowDownward, Search } from "@material-ui/icons";
 import DataGrid from "../components/DataGrid";
 import { useCallback, useEffect, useState } from "react";
 import { addComponent, deleteComponent, getComponents } from "../api/firebaseDataWrapper";
-import { addAlertWithTimeout, AlertSeverity, AlertType } from "../slices/alertSlice";
-import { generateUUID, INDEX, removeItemFromArray } from "../util";
+import { addSnackBarAlert } from "../slices/alertSlice";
+import { removeItemFromArray } from "../util";
 import store from "../store";
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -31,53 +29,40 @@ const Admin = () => {
 
     const onAddComponent = useCallback(component => {
         return new Promise<void>((resolve, reject) => {
+            if (!component.status || !component.title) {
+                store.dispatch(addSnackBarAlert('error', 'Title and Status fields are required'));
+                reject();
+                return;
+            }
+
             addComponent(component).then((compRef: string) => {
-                console.log()
+                console.log(statusComps)
                 setStatusComps([
                     ...statusComps,
-                    {id: compRef, ...component}
+                    { id: compRef, ...component }
                 ]);
-                store.dispatch(addAlertWithTimeout({
-                    id: generateUUID(),
-                    severity: 'success' as AlertSeverity,
-                    type: AlertType.SNACKBAR,
-                    message: "Component added successfully!"
-                }));
+                store.dispatch(addSnackBarAlert('success', 'Component added successfully!'));
                 resolve();
             }).catch(err => {
-                store.dispatch(addAlertWithTimeout({
-                    id: generateUUID(),
-                    severity: 'error' as AlertSeverity,
-                    type: AlertType.SNACKBAR,
-                    message: `Failed to add component with error: ${err}`
-                }));
+                store.dispatch(addSnackBarAlert('error', `Failed to add component with error: ${err}`));
                 reject();
             })
         });
-    }, []);
+    }, [statusComps]);
 
-    const onDeleteComponent = useCallback(componentId => {
+    const onDeleteComponent = useCallback(row => {
+        const componentId = row.id;
         return new Promise<void>((resolve, reject) => {
             deleteComponent(componentId).then(() => {
-                setStatusComps(removeItemFromArray(statusComps, INDEX, componentId));
-                store.dispatch(addAlertWithTimeout({
-                    id: generateUUID(),
-                    severity: 'success' as AlertSeverity,
-                    type: AlertType.SNACKBAR,
-                    message: "Component deleted successfully!"
-                }));
+                setStatusComps(removeItemFromArray(statusComps, "id", componentId));
+                store.dispatch(addSnackBarAlert('success', 'Component deleted successfully!'));
                 resolve();
             }).catch(err => {
-                store.dispatch(addAlertWithTimeout({
-                    id: generateUUID(),
-                    severity: 'error' as AlertSeverity,
-                    type: AlertType.SNACKBAR,
-                    message: `Failed to delete component with error: ${err}`
-                }));
+                store.dispatch(addSnackBarAlert('error', `Failed to delete component with error: ${err}`));
                 reject();
             })
         });
-    }, []);
+    }, [statusComps]);
 
     return (
         <Container className={classes.mainContent}>
@@ -92,6 +77,7 @@ const Admin = () => {
                         paging: false
                     }}
                     columns={[
+                        { title: "Id", field: "id", editable: "never" },
                         { title: "Title", field: "title" },
                         { title: "Status", field: "status", lookup: { "operational": "Operational", "degraded": "Degraded", "outage": "Outage", "maintainance": "Maintainance" } }
                     ]}

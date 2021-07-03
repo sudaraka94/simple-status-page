@@ -1,7 +1,6 @@
 import firebase from "firebase";
 import { useEffect } from "react";
-import { generateUUID } from "../util";
-import { addAlertWithTimeout, AlertSeverity, AlertType } from "../slices/alertSlice";
+import { addSnackBarAlert } from "../slices/alertSlice";
 import { handleAuthSuccess } from "../slices/authSlice";
 import store from "../store";
 
@@ -12,12 +11,7 @@ const withAutoSignIn = (WrappedComponent: React.ComponentType) => {
             firebase.auth().onAuthStateChanged(user => {
                 if (user && user.email) {
                     store.dispatch(handleAuthSuccess({ email: user.email }));
-                    store.dispatch(addAlertWithTimeout({
-                        id: generateUUID(),
-                        severity: 'success' as AlertSeverity,
-                        type: AlertType.SNACKBAR,
-                        message: "User logged in successfully!"
-                    }));
+                    store.dispatch(addSnackBarAlert('success', 'User logged in successfully!'));
                 }
             })
         });

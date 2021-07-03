@@ -1,5 +1,5 @@
 import { AddBox, ArrowUpward, Check, ChevronLeft, ChevronRight, Clear, DeleteOutline, Edit, FilterList, FirstPage, LastPage, Remove, SaveAlt, Search, ViewColumn } from "@material-ui/icons";
-import MaterialTable, { Column, Icons, MaterialTableProps } from "material-table";
+import MaterialTable, { Icons, MaterialTableProps } from "material-table";
 import { forwardRef } from "react";
 
 const tableIcons: Icons = {

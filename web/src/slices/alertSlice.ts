@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { PLAIN_ALERT_TIMEOUT, SNACKBAR_ALERT_TIMEOUT } from "../config";
-import store, { RootState } from "../store";
+import store, { AppDispatch, RootState } from "../store";
+import { generateUUID } from "../util";
 
 // Typedefs
 export enum AlertType {
@@ -33,7 +34,7 @@ export const alertSlice = createSlice({
         },
         removeAlert: (state, action: PayloadAction<string>) => {
             let index = state.findIndex(alert => alert.id === action.payload);
-            state.splice(index, 1);   
+            state.splice(index, 1);
         }
     },
 });
@@ -46,9 +47,18 @@ export const alertSelector = (state: RootState) => state.alert;
 export default alertSlice.reducer;
 
 // Defining a thunk for removing the alerts after sometime
-export const addAlertWithTimeout = (payload: Alert) => async (dispatch: typeof store.dispatch) => {
+export const addAlertWithTimeout = (payload: Alert) => async (dispatch: AppDispatch) => {
     dispatch(addAlert(payload));
-    setTimeout(()=> {
+    setTimeout(() => {
         dispatch(removeAlert(payload.id));
-    }, payload.type === AlertType.SNACKBAR? SNACKBAR_ALERT_TIMEOUT : PLAIN_ALERT_TIMEOUT)
+    }, payload.type === AlertType.SNACKBAR ? SNACKBAR_ALERT_TIMEOUT : PLAIN_ALERT_TIMEOUT)
+}
+
+export const addSnackBarAlert = (alertSeverity: AlertSeverity, alertMessage: string) => {
+    return addAlertWithTimeout({
+        id: generateUUID(),
+        severity: alertSeverity,
+        type: AlertType.SNACKBAR,
+        message: alertMessage
+    });
 }

@@ -4,10 +4,9 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import withAutoSignIn from "../hoc/withAutoSignIn";
-import { addAlertWithTimeout, AlertSeverity, AlertType } from "../slices/alertSlice";
+import { addSnackBarAlert } from "../slices/alertSlice";
 import { userEmailSelector } from "../slices/authSlice";
 import store from "../store";
-import { generateUUID } from "../util";
 
 const useStyles = makeStyles((theme: Theme) => ({
     mainContent: {
@@ -35,12 +34,7 @@ const Login = () => {
         firebase.auth().signInWithEmailAndPassword(email, password)
             .catch(error => {
                 console.log(error.code, error.message)
-                store.dispatch(addAlertWithTimeout({
-                    id: generateUUID(),
-                    severity: 'error' as AlertSeverity,
-                    type: AlertType.SNACKBAR,
-                    message: error.message
-                }));
+                store.dispatch(addSnackBarAlert('error', error.message));
             })
     }
 

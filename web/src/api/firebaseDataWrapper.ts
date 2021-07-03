@@ -12,7 +12,11 @@ export const getComponents = async () => {
     const db = firebase.firestore();
 
     let snapshot = await db.collection(componentsCollection).get();
-    return snapshot.docs.map(doc => doc.data());
+    return snapshot.docs.map(doc => {
+        const data = doc.data();
+        const id = doc.id;
+        return {id, ...data}
+    });
 }
 
 export const addComponent = async (component:Component) => {
