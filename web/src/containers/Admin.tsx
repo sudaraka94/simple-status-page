@@ -8,6 +8,7 @@ import store from "../store";
 import TabPlane from "../components/TabPlane";
 import SiteInfoEditor from "../components/SiteInfoEditor";
 import { SiteInfo } from "../typedefs";
+import Spinner from "../components/Spinner";
 
 const useStyles = makeStyles((theme: Theme) => ({
     mainContent: {
@@ -29,6 +30,7 @@ const Admin = () => {
     const classes = useStyles();
     const [statusComps, setStatusComps] = useState<any[]>([]);
     const [siteInfo, setSiteInfo] = useState<SiteInfo>({ title: "" });
+    const [isLoading, setIsLoading] = useState(true);
 
     const fetchData = async () => {
         // fetch info
@@ -40,7 +42,9 @@ const Admin = () => {
     }
 
     useEffect(() => {
-        fetchData().catch(err => {
+        fetchData().then(() => {
+            setIsLoading(false);
+        }).catch(err => {
             store.dispatch(addSnackBarAlert('error', `Failed to fetch data with error ${err}`));
         })
     }, []);
@@ -95,7 +99,7 @@ const Admin = () => {
         });
     }, [statusComps]);
 
-    const editSiteInfo = useCallback((siteInfo:SiteInfo) => {
+    const editSiteInfo = useCallback((siteInfo: SiteInfo) => {
         updateSiteInfo(siteInfo).then(() => {
             updateSiteInfo(siteInfo).then(() => {
                 store.dispatch(addSnackBarAlert('success', "Info Updated Successfully!"));
@@ -107,36 +111,42 @@ const Admin = () => {
 
     return (
         <Container className={classes.mainContent}>
-            <Typography className={classes.pageHeading} variant="h3">&#9749; Admin Dashboard</Typography>
-            <TabPlane tabs={[
-                {
-                    title: "Components",
-                    tabContent: (
-                        <DataGrid
-                            editable={{
-                                onRowAdd: onAddComponent,
-                                onRowDelete: onDeleteComponent,
-                                onRowUpdate: onEditComponent,
-                            }}
-                            options={{
-                                paging: false
-                            }}
-                            columns={[
-                                { title: "Id", field: "id", editable: "never" },
-                                { title: "Title", field: "title" },
-                                { title: "Status", field: "status", lookup: { "operational": "Operational", "degraded": "Degraded", "outage": "Outage", "maintainance": "Maintainance" } }
-                            ]}
-                            data={statusComps}
-                            title="Components" />
-                    )
-                },
-                {
-                    title: "Site Info",
-                    tabContent: (
-                        <SiteInfoEditor siteInfo={siteInfo} updateSiteInfo={editSiteInfo} />
-                    )
-                }
-            ]} />
+            {isLoading ?
+                <Spinner />
+                :
+                <>
+                    <Typography className={classes.pageHeading} variant="h3">&#9749; Admin Dashboard</Typography>
+                    <TabPlane tabs={[
+                        {
+                            title: "Components",
+                            tabContent: (
+                                <DataGrid
+                                    editable={{
+                                        onRowAdd: onAddComponent,
+                                        onRowDelete: onDeleteComponent,
+                                        onRowUpdate: onEditComponent,
+                                    }}
+                                    options={{
+                                        paging: false
+                                    }}
+                                    columns={[
+                                        { title: "Id", field: "id", editable: "never" },
+                                        { title: "Title", field: "title" },
+                                        { title: "Status", field: "status", lookup: { "operational": "Operational", "degraded": "Degraded", "outage": "Outage", "maintainance": "Maintainance" } }
+                                    ]}
+                                    data={statusComps}
+                                    title="Components" />
+                            )
+                        },
+                        {
+                            title: "Site Info",
+                            tabContent: (
+                                <SiteInfoEditor siteInfo={siteInfo} updateSiteInfo={editSiteInfo} />
+                            )
+                        }
+                    ]} />
+                </>
+            }
         </Container>
     );
 }

@@ -2,6 +2,7 @@ import { Container, makeStyles, Theme, Typography } from "@material-ui/core";
 import { useEffect, useState } from "react";
 import { fetchSiteInfo, getComponents } from "../api/firebaseDataWrapper";
 import AllStatusCard, { CardStatus } from "../components/AllStatusCard";
+import Spinner from "../components/Spinner";
 import StatusCard from "../components/StatusCard";
 import { addSnackBarAlert } from "../slices/alertSlice";
 import store from "../store";
@@ -23,6 +24,7 @@ const Home = () => {
     const [siteInfo, setSiteInfo] = useState<SiteInfo>({ title: "" });
     const [statusComps, setStatusComps] = useState<Component[]>([]);
     const [overallStatus, setOverallStatus] = useState<CardStatus>("operational");
+    const [isLoading, setIsLoading] = useState(true);
 
     const setOverallSystemStatus = (components: any[]) => {
         let iOverallStatus: CardStatus = "operational"
@@ -55,21 +57,29 @@ const Home = () => {
     }
 
     useEffect(() => {
-        fetchData().catch(err => {
+        fetchData().then(() => {
+            setIsLoading(false);
+        }).catch(err => {
             store.dispatch(addSnackBarAlert('error', 'Failed to fetch data'));
         });
     }, []);
 
     return (
         <Container className={classes.mainContent}>
-            <Typography className={classes.pageHeading} variant="h3">&#127968; {siteInfo.title}</Typography>
-            <Container>
-                <AllStatusCard status={overallStatus} />
-                <Typography variant="h5">Component Status</Typography>
-                <Container>
-                    {statusComps.map(component => (<StatusCard key={component.title} title={component.title} status={component.status} />))}
-                </Container>
-            </Container>
+            {isLoading ?
+                <Spinner />
+                :
+                <>
+                    <Typography className={classes.pageHeading} variant="h3">&#127968; {siteInfo.title}</Typography>
+                    <Container>
+                        <AllStatusCard status={overallStatus} />
+                        <Typography variant="h5">Component Status</Typography>
+                        <Container>
+                            {statusComps.map(component => (<StatusCard key={component.title} title={component.title} status={component.status} />))}
+                        </Container>
+                    </Container>
+                </>
+            }
         </Container>
     )
 }
